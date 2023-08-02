@@ -1,16 +1,26 @@
 from typing import Annotated
 
-from fastapi import FastAPI, Path, Query
+from fastapi import Body, FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
 
-@app.get("/items/{item_id}")
-async def read_items(
-    item_id: Annotated[int, Path(title="The ID of the item to get")],
-    q: Annotated[str | None, Query(alias="item-query")] = None,
+class Item(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    tax: float | None = None
+
+
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
+
+
+@app.put("/items/{item_id}")
+async def update_item(
+    item_id: int, item: Item, user: User, importance: Annotated[int, Body()]
 ):
-    results = {"item_id": item_id}
-    if q:
-        results.update({"q": q})
+    results = {"item_id": item_id, "item": item, "user": user, "importance": importance}
     return results
